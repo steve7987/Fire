@@ -49,54 +49,20 @@ function onClick(event){
 	var x = event.clientX;
 	var y = event.clientY;
 	console.log("Click at: " + x + ", " + y);
-	
 }
 
 function onMove(event){
 	var x = event.clientX;
 	var y = event.clientY;
-	//console.log("Move at: " + x + ", " + y);
 }
 
 function onKeyDown(event){
-	/*
-	switch(event.keyCode){
-		case 87:
-			if (!keyList[87]) { hero.yvel -= hero.jumpPower; }
-			break;
-		case 65:
-			if (!keyList[65]) { hero.xvel -= hero.speed; }
-			break;
-		case 83:
-			//if (!keyList[83]) { hero.yvel += hero.speed; }
-			break;
-		case 68:
-			if (!keyList[68]) { hero.xvel += hero.speed; }
-			break;
-	}
-	*/
 	keyList[event.keyCode] = true;
 	keyPressed[event.keyCode] = true;
 }
 
 function onKeyUp(event){
 	keyList[event.keyCode] = false; 
-	/*
-	switch(event.keyCode){
-		case 87:
-			//hero.yvel -= -hero.speed;
-			break;
-		case 65:
-			hero.xvel -= -hero.speed;
-			break;
-		case 83:
-			//hero.yvel += -hero.speed;
-			break;
-		case 68:
-			hero.xvel += -hero.speed;
-			break;
-	}
-	*/
 }
 
 function Hero(xpos, ypos, width, height, color){
@@ -143,6 +109,8 @@ Hero.prototype.update = function(dt){
 	}
 }
 
+//adjusts the hero's position, so it is no longer touching any of the blocks
+//but it is as close as it can be to where it would have collided
 Hero.prototype.adjust = function(cBlock, oldX, oldY, dt){
 	var tRight = (cBlock.x - oldX - this.dx) / this.xvel;
 	var tLeft = (cBlock.x + cBlock.dx - oldX) / this.xvel;
@@ -173,6 +141,16 @@ Hero.prototype.adjust = function(cBlock, oldX, oldY, dt){
 	}
 }
 
+//checks if the hero is on top of a block
+Hero.prototype.onGround = function(){
+	for (var i = 0; i < blockList.length; i++){
+		if (blockList[i].touchingBelow(this)){
+			return true;
+		}
+	}
+	return false;
+}
+
 var hero = new Hero(30, canvas.height / 2, 8, 20, '#1FFF1F');
 
 function Block(xpos, ypos, width, height, color){
@@ -193,6 +171,14 @@ Block.prototype.collide = function(target){
 	return !(this.x >= target.x + target.dx || 
            this.x + this.dx <= target.x || 
            this.y >= target.y + target.dy ||
+           this.y + this.dy <= target.y);
+}
+
+//returns true if the target is directly above this block
+Block.prototype.touchingBelow = function(target){
+	return !(this.x >= target.x + target.dx || 
+           this.x + this.dx <= target.x || 
+           this.y > target.y + target.dy ||
            this.y + this.dy <= target.y);
 }
 
@@ -218,6 +204,7 @@ var draw = function(timestamp){
 		blockList[i].draw();
 	}
 	hero.draw();
+
 	//update items
 	update(timestamp - lastFrameTime);
 	lastFrameTime = timestamp;
