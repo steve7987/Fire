@@ -66,6 +66,7 @@ function onKeyUp(event){
 }
 
 function Hero(xpos, ypos, width, height, color){
+	//basic parameters
 	this.x = xpos;
 	this.y = ypos;
 	this.dx = width;
@@ -73,10 +74,13 @@ function Hero(xpos, ypos, width, height, color){
 	this.color = color;
 	this.xvel = 0;
 	this.yvel = 0;
+	//ground movement vars
 	this.speed = 150;
+	//jumping vars
 	this.jumpPower = 450;  //velocity given by jumping
-	this.extraJumps = 1;
-	this.jumpsLeft = 1;
+	this.extraJumps = 4;
+	this.jumpsLeft = this.extraJumps;
+	this.jumpHorizontalAccel = 300;  //how fast velocity can change while jumping
 	
 }
 
@@ -89,11 +93,6 @@ Hero.prototype.draw = function(){
 Hero.prototype.update = function(dt){
 	var oldX = this.x;
 	var oldY = this.y;
-	
-	//compute velocities based on keys down
-	this.xvel = 0;
-	if (keyList[65]) { this.xvel -= this.speed; }
-	if (keyList[68]) { this.xvel += this.speed; }
 	//deal with jumping
 	var onGround = this.onGround();
 	if (onGround){
@@ -106,9 +105,35 @@ Hero.prototype.update = function(dt){
 			this.yvel = -1 * this.jumpPower;
 			if (!onGround){
 				this.jumpsLeft--;
+				//adjust velocity for secondary jumps
+				this.xvel = 0;
+				if (keyList[65]) { 
+					this.xvel -= this.speed; 
+				}
+				if (keyList[68]) { 
+					this.xvel += this.speed; 
+				}
 			}
 		}
 	}
+	//compute velocities based on keys down
+	if (onGround){
+		this.xvel = 0;
+		if (keyList[65]) { 
+			this.xvel -= this.speed; 
+		}
+		if (keyList[68]) { 
+			this.xvel += this.speed; 
+		}
+	}
+	else {
+		if (keyList[65]  && this.xvel > -this.speed) { 
+			this.xvel -= this.jumpHorizontalAccel * dt / 1000.0; 
+		}
+		if (keyList[68] && this.xvel < this.speed) { 
+			this.xvel += this.jumpHorizontalAccel * dt / 1000.0; 
+		}
+	}	
 	
 	//gravity
 	this.yvel += 980 * dt / 1000.0;
