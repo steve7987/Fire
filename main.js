@@ -74,7 +74,10 @@ function Hero(xpos, ypos, width, height, color){
 	this.xvel = 0;
 	this.yvel = 0;
 	this.speed = 150;
-	this.jumpPower = 450;
+	this.jumpPower = 450;  //velocity given by jumping
+	this.extraJumps = 1;
+	this.jumpsLeft = 1;
+	
 }
 
 Hero.prototype.draw = function(){
@@ -86,13 +89,25 @@ Hero.prototype.draw = function(){
 Hero.prototype.update = function(dt){
 	var oldX = this.x;
 	var oldY = this.y;
+	
 	//compute velocities based on keys down
 	this.xvel = 0;
 	if (keyList[65]) { this.xvel -= this.speed; }
 	if (keyList[68]) { this.xvel += this.speed; }
+	//deal with jumping
+	var onGround = this.onGround();
+	if (onGround){
+		this.jumpsLeft = this.extraJumps;
+	}
+	
 	if (keyPressed[87]) {
-		this.yvel = -1 * this.jumpPower;
 		keyPressed[87] = false;
+		if ((this.jumpsLeft > 0 || onGround)){
+			this.yvel = -1 * this.jumpPower;
+			if (!onGround){
+				this.jumpsLeft--;
+			}
+		}
 	}
 	
 	//gravity
