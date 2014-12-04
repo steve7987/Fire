@@ -108,7 +108,7 @@ function Hero(xpos, ypos, width, height, color){
 	this.xvel = 0;
 	this.yvel = 0;
 	this.speed = 150;
-	this.jumpPower = 250;
+	this.jumpPower = 450;
 }
 
 Hero.prototype.draw = function(){
@@ -130,7 +130,7 @@ Hero.prototype.update = function(dt){
 	}
 	
 	//gravity
-	this.yvel += 150 * dt / 1000.0;
+	this.yvel += 980 * dt / 1000.0;
 	//update position
 	this.x += this.xvel * dt / 1000.0;
 	this.y += this.yvel * dt / 1000.0;
@@ -138,41 +138,36 @@ Hero.prototype.update = function(dt){
 	for (var i = 0; i < blockList.length; i++){
 		if (blockList[i].collide(this)){
 			//compute new position and velocities
-			this.adjust(blockList[i], oldX, oldY);
+			this.adjust(blockList[i], oldX, oldY, dt / 1000.0);
 		}
 	}
 }
 
-Hero.prototype.adjust = function(cBlock, oldX, oldY){
+Hero.prototype.adjust = function(cBlock, oldX, oldY, dt){
 	var tRight = (cBlock.x - oldX - this.dx) / this.xvel;
 	var tLeft = (cBlock.x + cBlock.dx - oldX) / this.xvel;
 	var tUp = (cBlock.y +cBlock.dy - oldY) / this.yvel;
 	var tDown = (cBlock.y - oldY - this.dy) / this.yvel;
-	if (tRight < 0 || this.xvel == 0) { tRight = Infinity; }
-	if (tLeft < 0 || this.xvel == 0) { tLeft = Infinity; }
-	if (tUp < 0 || this.yvel == 0) { tUp = Infinity; }
-	if (tDown < 0 || this.yvel == 0) { tDown = Infinity; }
-	console.log(tRight + ", " + tLeft + ", " + tUp + ", " + tDown);
-	if (tRight < tLeft && tRight < tUp && tRight < tDown){
-		this.x = cBlock.x - this.dx; //oldX + this.xvel * tRight;
-		this.y = oldY + this.yvel * tRight;
+
+
+	//check for collision on each side and adjust if there is a collision
+	if (tRight < dt && tRight >= 0 && this.xvel != 0){
+		this.x = cBlock.x - this.dx;
 		this.xvel = 0;
 	}
-	else if (tLeft < tUp && tLeft < tDown){
-		this.x = cBlock.x + cBlock.dx; //oldX + this.xvel * tLeft;
-		this.y = oldY + this.yvel * tLeft;
+	if (tLeft < dt && tLeft >= 0 && this.xvel != 0){
+		this.x = cBlock.x + cBlock.dx;
 		this.xvel = 0;
 	}
-	else if (tUp < tDown){
-		this.x = oldX + this.xvel * tUp;
-		this.y = cBlock.y + cBlock.dy; //oldY + this.yvel * tUp;
+	if (tUp < dt && tUp >= 0 && this.yvel != 0){
+		this.y = cBlock.y + cBlock.dy;
 		this.yvel = 0;
 	}
-	else {
-		this.x = oldX + this.xvel * tDown;
-		this.y = cBlock.y - this.dy; //oldY + this.yvel * tDown;
+	if (tDown < dt && tDown >= 0 && this.yvel != 0){
+		this.y = cBlock.y - this.dy;
 		this.yvel = 0;
 	}
+	
 	if (cBlock.collide(this)){
 		console.log("still colliding");
 	}
