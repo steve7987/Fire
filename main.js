@@ -36,10 +36,13 @@ window.addEventListener("keydown", onKeyDown, false);
 
 window.addEventListener("keyup", onKeyUp, false);
 
+//keeps track of which keys are down, and if they have been pressed
 var keyList = new Array(256);
+var keyPressed = new Array(256);
 
 for (var i = 0; i < keyList.length; i++){
 	keyList[i] = false;
+	keyPressed[i] = false;
 }
 
 function onClick(event){
@@ -56,6 +59,7 @@ function onMove(event){
 }
 
 function onKeyDown(event){
+	/*
 	switch(event.keyCode){
 		case 87:
 			if (!keyList[87]) { hero.yvel -= hero.jumpPower; }
@@ -70,11 +74,14 @@ function onKeyDown(event){
 			if (!keyList[68]) { hero.xvel += hero.speed; }
 			break;
 	}
+	*/
 	keyList[event.keyCode] = true;
+	keyPressed[event.keyCode] = true;
 }
 
 function onKeyUp(event){
 	keyList[event.keyCode] = false; 
+	/*
 	switch(event.keyCode){
 		case 87:
 			//hero.yvel -= -hero.speed;
@@ -89,6 +96,7 @@ function onKeyUp(event){
 			hero.xvel += -hero.speed;
 			break;
 	}
+	*/
 }
 
 function Hero(xpos, ypos, width, height, color){
@@ -112,6 +120,15 @@ Hero.prototype.draw = function(){
 Hero.prototype.update = function(dt){
 	var oldX = this.x;
 	var oldY = this.y;
+	//compute velocities based on keys down
+	this.xvel = 0;
+	if (keyList[65]) { this.xvel -= this.speed; }
+	if (keyList[68]) { this.xvel += this.speed; }
+	if (keyPressed[87]) {
+		this.yvel = -1 * this.jumpPower;
+		keyPressed[87] = false;
+	}
+	
 	//gravity
 	this.yvel += 150 * dt / 1000.0;
 	//update position
