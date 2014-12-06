@@ -17,10 +17,10 @@ var resetCanvas = function(){
 	
 	
 }
-							
+
+//setting up basic variables
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
-
 canvas.width = 800;
 canvas.height = 600;
 
@@ -31,7 +31,6 @@ var mouseY = 0;
 //need to check for clicks in entire window to keep track of mouse button being down
 canvas.addEventListener("mousedown", onClick, false);  //add mouse listener which calls onClick function
 window.addEventListener("mousemove", onMove, false);
-
 window.addEventListener("keydown", onKeyDown, false);
 
 window.addEventListener("keyup", onKeyUp, false);
@@ -39,10 +38,25 @@ window.addEventListener("keyup", onKeyUp, false);
 //keeps track of which keys are down, and if they have been pressed
 var keyList = new Array(256);
 var keyPressed = new Array(256);
-
-for (var i = 0; i < keyList.length; i++){
+	for (var i = 0; i < keyList.length; i++){
 	keyList[i] = false;
 	keyPressed[i] = false;
+}
+
+var hero;
+var blockList;
+
+//initializes a level
+function initGame(){
+	hero = new Hero(30, canvas.height / 2, 8, 20, '#1FFF1F');
+	blockList = [];
+	blockList.push(new Block(0, canvas.height - 10, canvas.width, 10, "#FF1F1F"));
+	for (var i = 0; i < 15; i++){
+		blockList.push(new Block(Math.floor((Math.random() * canvas.width)), 
+								 Math.floor((Math.random() * canvas.height / 2 + canvas.height / 2)),
+								 Math.floor((Math.random() * 100 + 10)),
+								 Math.floor((Math.random() * 100 + 10)), "#FF1F1F")); 
+	}
 }
 
 function onClick(event){
@@ -80,7 +94,7 @@ function Hero(xpos, ypos, width, height, color){
 	this.jumpPower = 450;  //velocity given by jumping
 	this.extraJumps = 4;
 	this.jumpsLeft = this.extraJumps;
-	this.jumpHorizontalAccel = 300;  //how fast velocity can change while jumping
+	this.jumpHorizontalAccel = 800;  //how fast velocity can change while jumping
 	
 }
 
@@ -140,18 +154,29 @@ Hero.prototype.update = function(dt){
 	//update position
 	this.x += this.xvel * dt / 1000.0;
 	this.y += this.yvel * dt / 1000.0;
-
+	
+	//proposed change in time for x and y, if there will be collisions, adjust them 
+	this.pdtx = dt / 1000.0;
+	this.pdty = dt / 1000.0;
 	for (var i = 0; i < blockList.length; i++){
 		if (blockList[i].collide(this)){
 			//compute new position and velocities
-			this.adjust(blockList[i], oldX, oldY, dt / 1000.0);
+			this.adjust(blockList[i], oldX, oldY);
 		}
+	}
+	if (this.pdtx < dt / 1000.0){
+		this.x = oldX + this.xvel * this.pdtx;
+		this.xvel = 0;
+	}
+	if (this.pdty < dt / 1000.0){
+		this.y = oldY + this.yvel * this.pdty;
+		this.yvel = 0;
 	}
 }
 
 //adjusts the hero's position, so it is no longer touching any of the blocks
 //but it is as close as it can be to where it would have collided
-Hero.prototype.adjust = function(cBlock, oldX, oldY, dt){
+Hero.prototype.adjust = function(cBlock, oldX, oldY){
 	var tRight = (cBlock.x - oldX - this.dx) / this.xvel;
 	var tLeft = (cBlock.x + cBlock.dx - oldX) / this.xvel;
 	var tUp = (cBlock.y +cBlock.dy - oldY) / this.yvel;
@@ -159,25 +184,17 @@ Hero.prototype.adjust = function(cBlock, oldX, oldY, dt){
 
 
 	//check for collision on each side and adjust if there is a collision
-	if (tRight < dt && tRight >= 0 && this.xvel != 0){
-		this.x = cBlock.x - this.dx;
-		this.xvel = 0;
+	if (tRight < this.pdtx && tRight >= 0 && this.xvel != 0){
+		this.pdtx = tRight;
 	}
-	if (tLeft < dt && tLeft >= 0 && this.xvel != 0){
-		this.x = cBlock.x + cBlock.dx;
-		this.xvel = 0;
+	if (tLeft < this.pdtx && tLeft >= 0 && this.xvel != 0){
+		this.pdtx = tLeft;
 	}
-	if (tUp < dt && tUp >= 0 && this.yvel != 0){
-		this.y = cBlock.y + cBlock.dy;
-		this.yvel = 0;
+	if (tUp < this.pdty && tUp >= 0 && this.yvel != 0){
+		this.pdty = tUp;
 	}
-	if (tDown < dt && tDown >= 0 && this.yvel != 0){
-		this.y = cBlock.y - this.dy;
-		this.yvel = 0;
-	}
-	
-	if (cBlock.collide(this)){
-		console.log("still colliding");
+	if (tDown < this.pdty && tDown >= 0 && this.yvel != 0){
+		this.pdty = tDown;
 	}
 }
 
@@ -191,7 +208,7 @@ Hero.prototype.onGround = function(){
 	return false;
 }
 
-var hero = new Hero(30, canvas.height / 2, 8, 20, '#1FFF1F');
+
 
 function Block(xpos, ypos, width, height, color){
 	this.x = xpos;
@@ -202,6 +219,11 @@ function Block(xpos, ypos, width, height, color){
 }
 
 Block.prototype.draw = function(){
+	ctx.fillStyle = '#FFFFFF';
+	ctx.fillRect(this.x - 1, this.y - 1, this.dx + 2, this.dy + 2);
+	ctx.fill();
+
+
 	ctx.fillStyle = this.color;
 	ctx.fillRect(this.x, this.y, this.dx, this.dy);
 	ctx.fill();
@@ -222,10 +244,7 @@ Block.prototype.touchingBelow = function(target){
            this.y + this.dy <= target.y);
 }
 
-var blockList = [];
-blockList.push(new Block(50, 50, 100, 100, "#FF1F1F"));
-blockList.push(new Block(150, 150, 100, 100, "#FF1F1F"));
-blockList.push(new Block(0, canvas.height - 10, canvas.width, 10, "#FF1F1F"));
+
 
 
 function update(dt){
@@ -250,4 +269,7 @@ var draw = function(timestamp){
 	lastFrameTime = timestamp;
 }
 
-draw(0);
+window.onload = function(){
+	initGame();
+	draw(0);
+}
