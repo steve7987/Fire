@@ -52,8 +52,8 @@ function initGame(){
 	blockList = [];
 	blockList.push(new Block(0, canvas.height - 10, canvas.width, 10, "#FF1F1F"));
 	for (var i = 0; i < 15; i++){
-		blockList.push(new Block(Math.floor((Math.random() * canvas.width)), 
-								 Math.floor((Math.random() * canvas.height / 2 + canvas.height / 2)),
+		blockList.push(new Block(Math.floor((Math.random() * canvas.width / 20 + i * canvas.width / 15)), 
+								 Math.floor((Math.random() * canvas.height / 2 + canvas.height / 3)),
 								 Math.floor((Math.random() * 100 + 10)),
 								 Math.floor((Math.random() * 100 + 10)), "#FF1F1F")); 
 	}
@@ -92,7 +92,7 @@ function Hero(xpos, ypos, width, height, color){
 	this.speed = 150;
 	//jumping vars
 	this.jumpPower = 450;  //velocity given by jumping
-	this.extraJumps = 4;
+	this.extraJumps = 1;
 	this.jumpsLeft = this.extraJumps;
 	this.jumpHorizontalAccel = 800;  //how fast velocity can change while jumping
 	
@@ -141,16 +141,23 @@ Hero.prototype.update = function(dt){
 		}
 	}
 	else {
+		//movement in the air
 		if (keyList[65]  && this.xvel > -this.speed) { 
 			this.xvel -= this.jumpHorizontalAccel * dt / 1000.0; 
 		}
 		if (keyList[68] && this.xvel < this.speed) { 
 			this.xvel += this.jumpHorizontalAccel * dt / 1000.0; 
 		}
+		if (!keyList[65] && !keyList[68]){
+			this.xvel *= 0.9;
+		}
 	}	
 	
 	//gravity
 	this.yvel += 980 * dt / 1000.0;
+	if (this.yvel > 980){
+		this.yvel = 980;
+	}
 	//update position
 	this.x += this.xvel * dt / 1000.0;
 	this.y += this.yvel * dt / 1000.0;
