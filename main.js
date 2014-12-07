@@ -45,10 +45,12 @@ var keyPressed = new Array(256);
 
 var hero;
 var blockList;
+var camera;
 
 //initializes a level
 function initGame(){
 	hero = new Hero(30, canvas.height / 2, 8, 20, '#1FFF1F');
+	camera = new Camera(0, canvas.width, 0, 0, 0, 0);
 	blockList = [];
 	blockList.push(new Block(0, canvas.height - 10, canvas.width, 10, "#FF1F1F"));
 	for (var i = 0; i < 15; i++){
@@ -81,6 +83,29 @@ function onKeyUp(event){
 	keyList[event.keyCode] = false; 
 }
 
+function Camera(minX, maxX, minY, maxY, startX, startY){  //boundaries for the camera
+	this.minX = minX;
+	this.minY = minY;
+	this.maxX = maxX;
+	this.maxY = maxY;
+	
+	this.x = startX;
+	this.y = startY;
+	
+	this.xOffset = canvas.width / 2;
+	this.yOffset = canvas.height * 0.75;
+	
+}
+
+Camera.prototype.Update = function(dt){
+	this.x = hero.x + hero.dx / 2 - this.xOffset;
+	this.y = hero.y + hero.dy / 2 - this.yOffset;
+	if (this.x < this.minX) { this.x = this.minX; }
+	if (this.x > this.maxX) { this.x = this.maxX; }
+	if (this.y < this.minY) { this.y = this.minY; }
+	if (this.y > this.maxY) { this.y = this.maxY; }
+}
+
 function Hero(xpos, ypos, width, height, color){
 	//basic parameters
 	this.x = xpos;
@@ -102,7 +127,7 @@ function Hero(xpos, ypos, width, height, color){
 
 Hero.prototype.draw = function(){
 	ctx.fillStyle = this.color;
-	ctx.fillRect(this.x, this.y, this.dx, this.dy);
+	ctx.fillRect(this.x - camera.x, this.y - camera.y, this.dx, this.dy);
 	ctx.fill();
 }
 
@@ -153,13 +178,14 @@ Hero.prototype.update = function(dt){
 		if (!keyList[65] && !keyList[68]){
 			this.xvel *= 0.9;
 		}
+		//gravity
+		this.yvel += 980 * dt / 1000.0;
+		if (this.yvel > 980){
+			this.yvel = 980;
+		}
 	}	
 	
-	//gravity
-	this.yvel += 980 * dt / 1000.0;
-	if (this.yvel > 980){
-		this.yvel = 980;
-	}
+	
 	//update position
 	this.x += this.xvel * dt / 1000.0;
 	this.y += this.yvel * dt / 1000.0;
@@ -229,12 +255,12 @@ function Block(xpos, ypos, width, height, color){
 
 Block.prototype.draw = function(){
 	ctx.fillStyle = '#FFFFFF';
-	ctx.fillRect(this.x - 1, this.y - 1, this.dx + 2, this.dy + 2);
+	ctx.fillRect(this.x - 1 - camera.x, this.y - 1 - camera.y, this.dx + 2, this.dy + 2);
 	ctx.fill();
 
 
 	ctx.fillStyle = this.color;
-	ctx.fillRect(this.x, this.y, this.dx, this.dy);
+	ctx.fillRect(this.x - camera.x, this.y - camera.y, this.dx, this.dy);
 	ctx.fill();
 }
 
@@ -258,6 +284,7 @@ Block.prototype.touchingBelow = function(target){
 
 function update(dt){
 	hero.update(dt);
+	camera.Update(dt);
 }
 
 var draw = function(timestamp){
