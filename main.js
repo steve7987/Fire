@@ -50,12 +50,12 @@ var camera;
 //initializes a level
 function initGame(){
 	hero = new Hero(30, canvas.height / 2, 8, 20, '#1FFF1F');
-	camera = new Camera(0, canvas.width, 0, 0, 0, 0);
+	camera = new Camera(0, 3*canvas.width, -canvas.height, 0, 0, 0);
 	blockList = [];
 	blockList.push(new Block(0, canvas.height - 10, canvas.width, 10, "#FF1F1F"));
-	for (var i = 0; i < 15; i++){
+	for (var i = 0; i < 45; i++){
 		blockList.push(new Block(Math.floor((Math.random() * canvas.width / 20 + i * canvas.width / 15)), 
-								 Math.floor((Math.random() * canvas.height / 2 + canvas.height / 3)),
+								 Math.floor((Math.random() * canvas.height / 2 + canvas.height / 3) - 10*i),
 								 Math.floor((Math.random() * 100 + 10)),
 								 Math.floor((Math.random() * 100 + 10)), "#FF1F1F")); 
 	}
@@ -92,14 +92,46 @@ function Camera(minX, maxX, minY, maxY, startX, startY){  //boundaries for the c
 	this.x = startX;
 	this.y = startY;
 	
+	//spring camera variables
+	this.xvel = 0;
+	this.yvel = 0;
+	this.desiredX = this.x;
+	this.desiredY = this.y;
+	this.w = 5;  //value to compute constants
+	
+	//camera offset from center of hero
 	this.xOffset = canvas.width / 2;
-	this.yOffset = canvas.height * 0.75;
+	this.yOffset = canvas.height / 2;
 	
 }
 
 Camera.prototype.Update = function(dt){
-	this.x = hero.x + hero.dx / 2 - this.xOffset;
-	this.y = hero.y + hero.dy / 2 - this.yOffset;
+	this.desiredX = hero.x + hero.dx / 2 - this.xOffset;
+	if (hero.onGround() || hero.yvel >= 980){
+		this.desiredY = hero.y + hero.dy / 2 - this.yOffset;
+	}
+	//modify x
+	if ((this.x - this.desiredX)*(this.x - this.desiredX) > 1){
+		var xaccel = -2*this.w*this.xvel + (this.x - this.desiredX) * (-1*this.w*this.w);
+		this.xvel += xaccel * dt / 1000.0;
+		this.x += this.xvel * dt / 1000.0;
+	}
+	else {
+		this.x = this.desiredX;
+		this.xvel = 0;
+	}
+	//modify y
+	if ((this.y - this.desiredY)*(this.y - this.desiredY) > 1){
+		var yaccel = -2*this.w*this.yvel + (this.y - this.desiredY) * (-1*this.w*this.w);
+		this.yvel += yaccel * dt / 1000.0;
+		this.y += this.yvel * dt / 1000.0;
+	}
+	else {
+		this.y = this.desiredY;
+		this.yvel = 0;
+	}
+	
+	
 	if (this.x < this.minX) { this.x = this.minX; }
 	if (this.x > this.maxX) { this.x = this.maxX; }
 	if (this.y < this.minY) { this.y = this.minY; }
