@@ -71,8 +71,10 @@ function onMove(event){
 }
 
 function onKeyDown(event){
+	if (!keyList[event.keyCode]) {  //if the key was just pressed now
+		keyPressed[event.keyCode] = true;
+	}
 	keyList[event.keyCode] = true;
-	keyPressed[event.keyCode] = true;
 }
 
 function onKeyUp(event){
