@@ -50,7 +50,7 @@ var camera;
 //initializes a level
 function initGame(){
 	hero = new Hero(30, canvas.height / 2, 8, 20, '#1FFF1F');
-	camera = new Camera(0, 3*canvas.width, -canvas.height, 0, 0, 0);
+	camera = new Camera(0, 3*canvas.width, -canvas.height, canvas.height, 0, 0);
 	blockList = [];
 	blockList.push(new Block(0, canvas.height - 10, canvas.width, 10, "#FF1F1F"));
 	for (var i = 0; i < 45; i++){
@@ -107,7 +107,7 @@ function Camera(minX, maxX, minY, maxY, startX, startY){  //boundaries for the c
 
 Camera.prototype.Update = function(dt){
 	this.desiredX = hero.x + hero.dx / 2 - this.xOffset;
-	if (hero.onGround() || hero.yvel >= 980){
+	if (hero.onGround() || hero.yvel >= 490){
 		this.desiredY = hero.y + hero.dy / 2 - this.yOffset;
 	}
 	//modify x
@@ -130,8 +130,7 @@ Camera.prototype.Update = function(dt){
 		this.y = this.desiredY;
 		this.yvel = 0;
 	}
-	
-	
+	//check camera boundaries
 	if (this.x < this.minX) { this.x = this.minX; }
 	if (this.x > this.maxX) { this.x = this.maxX; }
 	if (this.y < this.minY) { this.y = this.minY; }
@@ -287,12 +286,11 @@ function Block(xpos, ypos, width, height, color){
 
 Block.prototype.draw = function(){
 	ctx.fillStyle = '#FFFFFF';
-	ctx.fillRect(this.x - 1 - camera.x, this.y - 1 - camera.y, this.dx + 2, this.dy + 2);
+	ctx.fillRect(Math.round(this.x - 1 - camera.x), Math.round(this.y - 1 - camera.y), this.dx + 2, this.dy + 2);
 	ctx.fill();
 
-
 	ctx.fillStyle = this.color;
-	ctx.fillRect(this.x - camera.x, this.y - camera.y, this.dx, this.dy);
+	ctx.fillRect(Math.round(this.x - camera.x), Math.round(this.y - camera.y), this.dx, this.dy);
 	ctx.fill();
 }
 
