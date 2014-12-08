@@ -159,7 +159,6 @@ function Hero(xpos, ypos, width, height, color){
 Hero.prototype.draw = function(){
 	ctx.fillStyle = this.color;
 	ctx.fillRect(this.x - camera.x, this.y - camera.y, this.dx, this.dy);
-	ctx.fill();
 }
 
 Hero.prototype.update = function(dt){
@@ -287,11 +286,9 @@ function Block(xpos, ypos, width, height, color){
 Block.prototype.draw = function(){
 	ctx.fillStyle = '#FFFFFF';
 	ctx.fillRect(Math.round(this.x - 1 - camera.x), Math.round(this.y - 1 - camera.y), this.dx + 2, this.dy + 2);
-	ctx.fill();
 
 	ctx.fillStyle = this.color;
 	ctx.fillRect(Math.round(this.x - camera.x), Math.round(this.y - camera.y), this.dx, this.dy);
-	ctx.fill();
 }
 
 Block.prototype.collide = function(target){
@@ -323,7 +320,6 @@ var draw = function(timestamp){
 	//set black background
 	ctx.fillStyle = "#000000";
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
-	ctx.fill();
 	//draw items
 	for (var i = 0; i < blockList.length; i++){
 		blockList[i].draw();
