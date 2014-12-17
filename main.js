@@ -311,11 +311,11 @@ Block.prototype.touchingBelow = function(target){
 }
 
 
-function nextLevel(timestamp){
+function nextLevel(){
 	level++;
 	initGame(5*level);
-	console.log(timestamp);
-	draw();
+	lastFrameTime = 0;
+	window.requestAnimFrame(draw);
 }
 
 function update(dt){
@@ -324,11 +324,13 @@ function update(dt){
 }
 
 var draw = function(timestamp){
+	
 	//update items
-	update(timestamp - lastFrameTime);
+	if (lastFrameTime != 0){
+		update(timestamp - lastFrameTime);
+	}
 	lastFrameTime = timestamp;
-	
-	
+
 	//draw items
 	resetCanvas();
 	//set black background
@@ -339,14 +341,16 @@ var draw = function(timestamp){
 		blockList[i].draw();
 	}
 	hero.draw();
-
+	ctx.fillStyle = "#DDFFFF";
+	ctx.fillText("Level: " + level, 50, 25);
+	
 	//check for game over
 	if (blockList[blockList.length - 1].touchingBelow(hero)){
 		ctx.fillStyle = "#DDFFFF";
 		ctx.fillText("Level Complete", 50, 50);
 		//start next level in 1000 milliseconds
-		//window.setTimeout(nextLevel, 1000);
-		//return;
+		window.setTimeout(nextLevel, 1000);
+		return;
 	}
 	//request next frame to be drawn
 	window.requestAnimFrame(draw);
@@ -355,5 +359,5 @@ var draw = function(timestamp){
 window.onload = function(){
 	level = 1;
 	initGame(5*level);
-	draw(0);
+	window.requestAnimFrame(draw);
 }
