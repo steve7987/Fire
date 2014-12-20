@@ -227,29 +227,35 @@ Hero.prototype.update = function(dt){
 	//proposed change in time for x and y, if there will be collisions, adjust them 
 	this.pdtx = dt / 1000.0;
 	this.pdty = dt / 1000.0;
+	//adjust y pos first, then do x
 	for (var i = 0; i < blockList.length; i++){
 		if (blockList[i].collide(this)){
 			//compute new position and velocities
-			this.adjust(blockList[i], oldX, oldY);
+			this.adjustY(blockList[i], oldX, oldY);
+		}
+	}
+	if (this.pdty < dt / 1000.0){
+		this.y = oldY + this.yvel * this.pdty;
+		this.yvel = 0;
+	}
+	for (var i = 0; i < blockList.length; i++){
+		if (blockList[i].collide(this)){
+			//compute new position and velocities
+			this.adjustX(blockList[i], oldX, oldY);
 		}
 	}
 	if (this.pdtx < dt / 1000.0){
 		this.x = oldX + this.xvel * this.pdtx;
 		this.xvel = 0;
 	}
-	if (this.pdty < dt / 1000.0){
-		this.y = oldY + this.yvel * this.pdty;
-		this.yvel = 0;
-	}
+	
 }
 
 //adjusts the hero's position, so it is no longer touching any of the blocks
 //but it is as close as it can be to where it would have collided
-Hero.prototype.adjust = function(cBlock, oldX, oldY){
+Hero.prototype.adjustX = function(cBlock, oldX, oldY){
 	var tRight = (cBlock.x - oldX - this.dx) / this.xvel;
 	var tLeft = (cBlock.x + cBlock.dx - oldX) / this.xvel;
-	var tUp = (cBlock.y +cBlock.dy - oldY) / this.yvel;
-	var tDown = (cBlock.y - oldY - this.dy) / this.yvel;
 
 
 	//check for collision on each side and adjust if there is a collision
@@ -259,6 +265,14 @@ Hero.prototype.adjust = function(cBlock, oldX, oldY){
 	if (tLeft < this.pdtx && tLeft >= 0 && this.xvel != 0){
 		this.pdtx = tLeft;
 	}
+}
+
+Hero.prototype.adjustY = function(cBlock, oldX, oldY){
+	var tUp = (cBlock.y +cBlock.dy - oldY) / this.yvel;
+	var tDown = (cBlock.y - oldY - this.dy) / this.yvel;
+
+
+	//check for collision on each side and adjust if there is a collision
 	if (tUp < this.pdty && tUp >= 0 && this.yvel != 0){
 		this.pdty = tUp;
 	}
