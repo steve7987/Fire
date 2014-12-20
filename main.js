@@ -318,6 +318,14 @@ function nextLevel(){
 	window.requestAnimFrame(draw);
 }
 
+function resetLevel(){
+	//reset hero and camera position, but leave blocks the same
+	hero = new Hero(30, canvas.height / 2, 8, 20, '#1FFF1F');
+	camera = new Camera(0, 3*canvas.width, -canvas.height, canvas.height, 0, 0);
+	lastFrameTime = 0;
+	window.requestAnimFrame(draw);
+}
+
 function update(dt){
 	hero.update(dt);
 	camera.Update(dt);
@@ -344,12 +352,21 @@ var draw = function(timestamp){
 	ctx.fillStyle = "#DDFFFF";
 	ctx.fillText("Level: " + level, 50, 25);
 	
-	//check for game over
+	
+	
+	//check for end of level
 	if (blockList[blockList.length - 1].touchingBelow(hero)){
 		ctx.fillStyle = "#DDFFFF";
 		ctx.fillText("Level Complete", 50, 50);
-		//start next level in 1000 milliseconds
+		//start next level in 1000 milliseconds and don't call draw anymore
 		window.setTimeout(nextLevel, 1000);
+		return;
+	}
+	//check for hero death
+	if (hero.y > camera.maxY + canvas.height){  //death from falling
+		ctx.fillStyle = "#DDFFFF";
+		ctx.fillText("You Died", 50, 50);
+		window.setTimeout(resetLevel, 1000);
 		return;
 	}
 	//request next frame to be drawn
