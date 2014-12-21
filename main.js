@@ -157,12 +157,26 @@ function Hero(xpos, ypos, width, height, color){
 	this.extraJumps = 1;
 	this.jumpsLeft = this.extraJumps;
 	this.jumpHorizontalAccel = 800;  //how fast velocity can change while jumping
+	this.facing = 1; //1 is right, -1 if left
 	
 }
 
 Hero.prototype.draw = function(){
-	ctx.fillStyle = this.color;
-	ctx.fillRect(this.x - camera.x, this.y - camera.y, this.dx, this.dy);
+	//ctx.fillStyle = this.color;
+	//ctx.fillRect(this.x - camera.x, this.y - camera.y, this.dx, this.dy);
+	if (this.facing == 1){
+		ctx.save();
+		ctx.translate(this.x - camera.x, this.y - camera.y);
+		ctx.drawImage(heroImg, 0, 0);
+		ctx.restore();
+	}
+	else {
+		ctx.save();
+		ctx.translate(this.x - camera.x + this.dx, this.y - camera.y);
+		ctx.scale(-1, 1);
+		ctx.drawImage(heroImg, 0, 0);
+		ctx.restore();
+	}
 }
 
 Hero.prototype.update = function(dt){
@@ -218,7 +232,12 @@ Hero.prototype.update = function(dt){
 			this.yvel = 980;
 		}
 	}	
-	
+	if (this.xvel > 0){
+		this.facing = 1;
+	}
+	else if (this.xvel < 0){
+		this.facing = -1;
+	}
 	
 	//update position
 	this.x += this.xvel * dt / 1000.0;
@@ -355,22 +374,22 @@ var draw = function(timestamp){
 
 	//draw items
 	resetCanvas();
-	//set black background
-	ctx.fillStyle = "#000000";
+	//set background
+	ctx.fillStyle = "#F1F1F1";
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 	//draw items
 	for (var i = 0; i < blockList.length; i++){
 		blockList[i].draw();
 	}
 	hero.draw();
-	ctx.fillStyle = "#DDFFFF";
+	ctx.fillStyle = "#000000";
 	ctx.fillText("Level: " + level, 50, 25);
 	
 	
 	
 	//check for end of level
 	if (blockList[blockList.length - 1].touchingBelow(hero)){
-		ctx.fillStyle = "#DDFFFF";
+		ctx.fillStyle = "#000000";
 		ctx.fillText("Level Complete", 50, 50);
 		//start next level in 1000 milliseconds and don't call draw anymore
 		window.setTimeout(nextLevel, 1000);
@@ -378,7 +397,7 @@ var draw = function(timestamp){
 	}
 	//check for hero death
 	if (hero.y > camera.maxY + canvas.height){  //death from falling
-		ctx.fillStyle = "#DDFFFF";
+		ctx.fillStyle = "#000000";
 		ctx.fillText("You Died", 50, 50);
 		window.setTimeout(resetLevel, 1000);
 		return;
@@ -386,6 +405,9 @@ var draw = function(timestamp){
 	//request next frame to be drawn
 	window.requestAnimFrame(draw);
 }
+
+var heroImg = new Image();
+heroImg.src = "./hero.png";
 
 window.onload = function(){
 	level = 1;
