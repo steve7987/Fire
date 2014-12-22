@@ -18,7 +18,7 @@ var resetCanvas = function(){
 	
 }
 
-//setting up basic variables
+//setting up variables for controlling screen
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
 canvas.width = 800;
@@ -43,26 +43,6 @@ var keyPressed = new Array(256);
 	keyPressed[i] = false;
 }
 
-var hero;
-var blockList;
-var camera;
-var level;
-
-//initializes a level
-function initGame(levelLength){
-	hero = new Hero(30, canvas.height / 2, 8, 20, '#1FFF1F');
-	camera = new Camera(0, 3*canvas.width, -canvas.height, canvas.height, 0, 0);
-	blockList = [];
-	blockList.push(new Block(0, canvas.height - 10, canvas.width, 10, "#FF1F1F"));
-	for (var i = 0; i < levelLength; i++){
-		blockList.push(new Block(Math.floor((Math.random() * canvas.width / 20 + i * canvas.width / 15)), 
-								 Math.floor((Math.random() * canvas.height / 2 + canvas.height / 3) - 10*i),
-								 Math.floor((Math.random() * 100 + 10)),
-								 Math.floor((Math.random() * 100 + 10)), "#FF1F1F")); 
-	}
-	blockList[blockList.length - 1].color = "#1F1FFF";
-}
-
 function onClick(event){
 	var x = event.clientX;
 	var y = event.clientY;
@@ -83,6 +63,26 @@ function onKeyDown(event){
 
 function onKeyUp(event){
 	keyList[event.keyCode] = false; 
+}
+
+var hero;
+var blockList;
+var camera;
+var level;
+
+//initializes a level
+function initGame(levelLength){
+	hero = new Hero(30, canvas.height / 2, 15, 24, '#1FFF1F');
+	camera = new Camera(0, 3*canvas.width, -canvas.height, canvas.height, 0, 0);
+	blockList = [];
+	blockList.push(new Block(0, canvas.height - 10, canvas.width, 10, "#FF1F1F"));
+	for (var i = 0; i < levelLength; i++){
+		blockList.push(new Block(Math.floor((Math.random() * canvas.width / 20 + i * canvas.width / 15)), 
+								 Math.floor((Math.random() * canvas.height / 2 + canvas.height / 3) - 10*i),
+								 Math.floor((Math.random() * 100 + 10)),
+								 Math.floor((Math.random() * 100 + 10)), "#FF1F1F")); 
+	}
+	blockList[blockList.length - 1].color = "#1F1FFF";
 }
 
 function Camera(minX, maxX, minY, maxY, startX, startY){  //boundaries for the camera
@@ -157,25 +157,53 @@ function Hero(xpos, ypos, width, height, color){
 	this.extraJumps = 1;
 	this.jumpsLeft = this.extraJumps;
 	this.jumpHorizontalAccel = 800;  //how fast velocity can change while jumping
+	
+	//animation variables
 	this.facing = 1; //1 is right, -1 if left
+	//for walking
+	this.isWalking = false;
+	this.walkingFrame = 0;
+	this.walkingTimer = 0;
+	this.maxWalkFrames = 4;
+	this.milliPerWalkFrame = 150;
 	
 }
 
-Hero.prototype.draw = function(){
-	//ctx.fillStyle = this.color;
-	//ctx.fillRect(this.x - camera.x, this.y - camera.y, this.dx, this.dy);
-	if (this.facing == 1){
-		ctx.save();
-		ctx.translate(this.x - camera.x, this.y - camera.y);
-		ctx.drawImage(heroImg, 0, 0);
-		ctx.restore();
+Hero.prototype.draw = function(dt){
+	if (this.isWalking){
+		this.walkingTimer += dt;
+		if (this.walkingTimer > this.milliPerWalkFrame){
+			this.walkingTimer -= this.milliPerWalkFrame;
+			this.walkingFrame = (this.walkingFrame + 1) % this.maxWalkFrames;
+		}
+		if (this.facing == 1){
+			ctx.save();
+			ctx.translate(this.x - camera.x, this.y - camera.y);
+			ctx.drawImage(heroImg, this.walkingFrame * 16, 0, 15, 24, 0, 0, 15, 24);
+			ctx.restore();
+		}
+		else {
+			ctx.save();
+			ctx.translate(this.x - camera.x + this.dx, this.y - camera.y);
+			ctx.scale(-1, 1);
+			ctx.drawImage(heroImg, this.walkingFrame * 16, 0, 15, 24, 0, 0, 15, 24);
+			ctx.restore();
+		}
 	}
 	else {
-		ctx.save();
-		ctx.translate(this.x - camera.x + this.dx, this.y - camera.y);
-		ctx.scale(-1, 1);
-		ctx.drawImage(heroImg, 0, 0);
-		ctx.restore();
+		if (this.facing == 1){
+			ctx.save();
+			ctx.translate(this.x - camera.x, this.y - camera.y);
+			ctx.drawImage(heroImg, 0, 0, 15, 24, 0, 0, 15, 24);
+			ctx.restore();
+		}
+		else {
+			ctx.save();
+			ctx.translate(this.x - camera.x + this.dx, this.y - camera.y);
+			ctx.scale(-1, 1);
+			ctx.drawImage(heroImg, 0, 0, 15, 24, 0, 0, 15, 24);
+			ctx.restore();
+		}
 	}
 }
 
@@ -232,11 +260,18 @@ Hero.prototype.update = function(dt){
 			this.yvel = 980;
 		}
 	}	
+	//determine animation type
 	if (this.xvel > 0){
 		this.facing = 1;
 	}
 	else if (this.xvel < 0){
 		this.facing = -1;
+	}
+	if (onGround && this.xvel != 0){
+		this.isWalking = true;
+	}
+	else {
+		this.isWalking = false;
 	}
 	
 	//update position
@@ -320,7 +355,7 @@ function Block(xpos, ypos, width, height, color){
 	this.color = color;
 }
 
-Block.prototype.draw = function(){
+Block.prototype.draw = function(dt){
 	//ctx.fillStyle = '#FFFFFF';
 	//ctx.fillRect(Math.round(this.x - 1 - camera.x), Math.round(this.y - 1 - camera.y), this.dx + 2, this.dy + 2);
 
@@ -353,7 +388,7 @@ function nextLevel(){
 
 function resetLevel(){
 	//reset hero and camera position, but leave blocks the same
-	hero = new Hero(30, canvas.height / 2, 8, 20, '#1FFF1F');
+	hero = new Hero(30, canvas.height / 2, 15, 24, '#1FFF1F');
 	camera = new Camera(0, 3*canvas.width, -canvas.height, canvas.height, 0, 0);
 	lastFrameTime = 0;
 	window.requestAnimFrame(draw);
@@ -367,8 +402,10 @@ function update(dt){
 var draw = function(timestamp){
 	
 	//update items
+	var timeStep = 0;
 	if (lastFrameTime != 0){
-		update(timestamp - lastFrameTime);
+		timeStep = timestamp - lastFrameTime;
+		update(timeStep);
 	}
 	lastFrameTime = timestamp;
 
@@ -379,9 +416,9 @@ var draw = function(timestamp){
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 	//draw items
 	for (var i = 0; i < blockList.length; i++){
-		blockList[i].draw();
+		blockList[i].draw(timeStep);
 	}
-	hero.draw();
+	hero.draw(timeStep);
 	ctx.fillStyle = "#000000";
 	ctx.fillText("Level: " + level, 50, 25);
 	
