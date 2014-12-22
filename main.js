@@ -164,8 +164,8 @@ function Hero(xpos, ypos, width, height, color){
 	this.animationType = -1;  //-1 is default (0,0) pose, other values refer to level in the sprite sheet
 	this.Frame = 0;
 	this.Timer = 0;
-	this.maxFrames = [4];  //the max frames for each type of animation
-	this.milliPerFrame = [100];  //milliseconds for each frame
+	this.maxFrames = [4, 1, 1];  //the max frames for each type of animation
+	this.milliPerFrame = [100, 100, 100];  //milliseconds for each frame
 	
 }
 
@@ -205,6 +205,15 @@ Hero.prototype.draw = function(dt){
 			ctx.restore();
 		}
 	}
+}
+
+Hero.prototype.changeAnimation = function(newAnim){
+	if (newAnim == this.animationType){
+		return;
+	}
+	this.Frame = 0;
+	this.Timer = 0;
+	this.animationType = newAnim;
 }
 
 Hero.prototype.update = function(dt){
@@ -268,7 +277,13 @@ Hero.prototype.update = function(dt){
 		this.facing = -1;
 	}
 	if (onGround && this.xvel != 0){
-		this.animationType = 0;
+		this.changeAnimation(0);
+	}
+	else if (!onGround && this.yvel <= 0){
+		this.changeAnimation(1);
+	}
+	else if (!onGround && this.yvel > 0){
+		this.changeAnimation(2);
 	}
 	else {
 		this.animationType = -1;
@@ -444,7 +459,7 @@ var draw = function(timestamp){
 }
 
 var heroImg = new Image();
-heroImg.src = "./hero.png";
+heroImg.src = "./char.png";
 
 window.onload = function(){
 	level = 1;
