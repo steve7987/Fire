@@ -164,18 +164,30 @@ function Hero(xpos, ypos, width, height, color){
 	this.animationType = -1;  //-1 is default (0,0) pose, other values refer to level in the sprite sheet
 	this.Frame = 0;
 	this.Timer = 0;
-	this.maxFrames = [4, 1, 1];  //the max frames for each type of animation
-	this.milliPerFrame = [100, 100, 100];  //milliseconds for each frame
+	this.maxFrames = [4, 2, 1, 3];  //the max frames for each type of animation
+	this.milliPerFrame = [100, 350, 100, 50];  //milliseconds for each frame
+	this.repeat = [true, false, false, false];  //if the animation should loop or just stop on last frame
 	
 }
 
 Hero.prototype.draw = function(dt){
 	if (this.animationType >= 0){
+		//update the animation frame if needed
 		this.Timer += dt;
 		if (this.Timer > this.milliPerFrame[this.animationType]){
 			this.Timer -= this.milliPerFrame[this.animationType];
-			this.Frame = (this.Frame + 1) % this.maxFrames[this.animationType];
+			this.Frame++;
+			if (this.Frame >= this.maxFrames[this.animationType]){
+				//if animation repeats, reset to zero otherwise stay on last frame
+				if (this.repeat[this.animationType]){
+					this.Frame = 0;
+				}
+				else {
+					this.Frame--;
+				}
+			}
 		}
+		//draw the sprite.  flip it if facing left
 		if (this.facing == 1){
 			ctx.save();
 			ctx.translate(this.x - camera.x, this.y - camera.y);
@@ -191,6 +203,7 @@ Hero.prototype.draw = function(dt){
 		}
 	}
 	else {
+		//draw default standing animation
 		if (this.facing == 1){
 			ctx.save();
 			ctx.translate(this.x - camera.x, this.y - camera.y);
@@ -229,8 +242,10 @@ Hero.prototype.update = function(dt){
 		keyPressed[87] = false;
 		if ((this.jumpsLeft > 0 || onGround)){
 			this.yvel = -1 * this.jumpPower;
+			this.changeAnimation(1);
 			if (!onGround){
 				this.jumpsLeft--;
+				this.changeAnimation(3);
 				//adjust velocity for secondary jumps
 				this.xvel = 0;
 				if (keyList[65]) { 
@@ -240,6 +255,7 @@ Hero.prototype.update = function(dt){
 					this.xvel += this.speed; 
 				}
 			}
+			onGround = false;
 		}
 	}
 	//compute velocities based on keys down
@@ -279,13 +295,10 @@ Hero.prototype.update = function(dt){
 	if (onGround && this.xvel != 0){
 		this.changeAnimation(0);
 	}
-	else if (!onGround && this.yvel <= 0){
-		this.changeAnimation(1);
-	}
 	else if (!onGround && this.yvel > 0){
 		this.changeAnimation(2);
 	}
-	else {
+	else if (onGround && this.xvel == 0) {
 		this.animationType = -1;
 	}
 	
