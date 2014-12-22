@@ -160,33 +160,33 @@ function Hero(xpos, ypos, width, height, color){
 	
 	//animation variables
 	this.facing = 1; //1 is right, -1 if left
-	//for walking
-	this.isWalking = false;
-	this.walkingFrame = 0;
-	this.walkingTimer = 0;
-	this.maxWalkFrames = 4;
-	this.milliPerWalkFrame = 150;
+	
+	this.animationType = -1;  //-1 is default (0,0) pose, other values refer to level in the sprite sheet
+	this.Frame = 0;
+	this.Timer = 0;
+	this.maxFrames = [4];  //the max frames for each type of animation
+	this.milliPerFrame = [100];  //milliseconds for each frame
 	
 }
 
 Hero.prototype.draw = function(dt){
-	if (this.isWalking){
-		this.walkingTimer += dt;
-		if (this.walkingTimer > this.milliPerWalkFrame){
-			this.walkingTimer -= this.milliPerWalkFrame;
-			this.walkingFrame = (this.walkingFrame + 1) % this.maxWalkFrames;
+	if (this.animationType >= 0){
+		this.Timer += dt;
+		if (this.Timer > this.milliPerFrame[this.animationType]){
+			this.Timer -= this.milliPerFrame[this.animationType];
+			this.Frame = (this.Frame + 1) % this.maxFrames[this.animationType];
 		}
 		if (this.facing == 1){
 			ctx.save();
 			ctx.translate(this.x - camera.x, this.y - camera.y);
-			ctx.drawImage(heroImg, this.walkingFrame * 16, 0, 15, 24, 0, 0, 15, 24);
+			ctx.drawImage(heroImg, this.Frame * 16, this.animationType * 25, 15, 24, 0, 0, 15, 24);
 			ctx.restore();
 		}
 		else {
 			ctx.save();
 			ctx.translate(this.x - camera.x + this.dx, this.y - camera.y);
 			ctx.scale(-1, 1);
-			ctx.drawImage(heroImg, this.walkingFrame * 16, 0, 15, 24, 0, 0, 15, 24);
+			ctx.drawImage(heroImg, this.Frame * 16, this.animationType * 25, 15, 24, 0, 0, 15, 24);
 			ctx.restore();
 		}
 	}
@@ -268,10 +268,10 @@ Hero.prototype.update = function(dt){
 		this.facing = -1;
 	}
 	if (onGround && this.xvel != 0){
-		this.isWalking = true;
+		this.animationType = 0;
 	}
 	else {
-		this.isWalking = false;
+		this.animationType = -1;
 	}
 	
 	//update position

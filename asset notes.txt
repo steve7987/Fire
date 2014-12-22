@@ -1,0 +1,1 @@
+the sprite is 15 by 24 pixels, with 1 pixel of padding between each image.  There should be 1 type of animation per level (e.g. level 0 is walking level 1 is jumping).
