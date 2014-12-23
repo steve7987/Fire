@@ -165,7 +165,7 @@ function Hero(xpos, ypos, width, height, color){
 	this.Frame = 0;
 	this.Timer = 0;
 	this.maxFrames = [4, 2, 1, 3];  //the max frames for each type of animation
-	this.milliPerFrame = [100, 350, 100, 50];  //milliseconds for each frame
+	this.milliPerFrame = [100, 350, 100, 75];  //milliseconds for each frame
 	this.repeat = [true, false, false, false];  //if the animation should loop or just stop on last frame
 	
 }
@@ -242,10 +242,15 @@ Hero.prototype.update = function(dt){
 		keyPressed[87] = false;
 		if ((this.jumpsLeft > 0 || onGround)){
 			this.yvel = -1 * this.jumpPower;
-			this.changeAnimation(1);
+			if (this.xvel != 0){			
+				this.changeAnimation(1);  //jump from ground when moving
+			}
+			else {
+				this.changeAnimation(3);  //straight up jump (for now same as air jump)
+			}
 			if (!onGround){
 				this.jumpsLeft--;
-				this.changeAnimation(3);
+				this.changeAnimation(3);  //air jump animation
 				//adjust velocity for secondary jumps
 				this.xvel = 0;
 				if (keyList[65]) { 
@@ -293,13 +298,13 @@ Hero.prototype.update = function(dt){
 		this.facing = -1;
 	}
 	if (onGround && this.xvel != 0){
-		this.changeAnimation(0);
+		this.changeAnimation(0);  //walking animation
 	}
 	else if (!onGround && this.yvel > 0){
-		this.changeAnimation(2);
+		this.changeAnimation(2);  //falling animation
 	}
 	else if (onGround && this.xvel == 0) {
-		this.animationType = -1;
+		this.animationType = -1;  //default standing animation
 	}
 	
 	//update position
