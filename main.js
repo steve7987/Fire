@@ -99,7 +99,7 @@ function Camera(minX, maxX, minY, maxY, startX, startY){  //boundaries for the c
 	this.yvel = 0;
 	this.desiredX = this.x;
 	this.desiredY = this.y;
-	this.w = 3;  //value to compute constants
+	this.w = 7;  //value to compute constants
 	
 	//camera offset from center of hero
 	this.xOffset = canvas.width / 2;
@@ -411,7 +411,7 @@ function nextLevel(){
 	level++;
 	initGame(5*level);
 	lastFrameTime = 0;
-	window.requestAnimFrame(draw);
+	window.requestAnimFrame(loop);
 }
 
 function resetLevel(){
@@ -419,7 +419,7 @@ function resetLevel(){
 	hero = new Hero(30, canvas.height / 2, 15, 24, '#1FFF1F');
 	camera = new Camera(0, 3*canvas.width, -canvas.height, canvas.height, 0, 0);
 	lastFrameTime = 0;
-	window.requestAnimFrame(draw);
+	window.requestAnimFrame(loop);
 }
 
 function update(dt){
@@ -427,7 +427,22 @@ function update(dt){
 	camera.Update(dt);
 }
 
-var draw = function(timestamp){
+function drawScreen(timestamp){
+	//draw items
+	resetCanvas();
+	//set background
+	ctx.fillStyle = "#F1F1F1";
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
+	//draw items
+	for (var i = 0; i < blockList.length; i++){
+		blockList[i].draw(timestamp);
+	}
+	hero.draw(timestamp);
+	ctx.fillStyle = "#000000";
+	ctx.fillText("Level: " + level, 50, 25);
+}
+
+var loop = function(timestamp){
 	
 	//update items
 	var timeStep = 0;
@@ -437,26 +452,17 @@ var draw = function(timestamp){
 	}
 	lastFrameTime = timestamp;
 
-	//draw items
-	resetCanvas();
-	//set background
-	ctx.fillStyle = "#F1F1F1";
-	ctx.fillRect(0, 0, canvas.width, canvas.height);
-	//draw items
-	for (var i = 0; i < blockList.length; i++){
-		blockList[i].draw(timeStep);
-	}
-	hero.draw(timeStep);
-	ctx.fillStyle = "#000000";
-	ctx.fillText("Level: " + level, 50, 25);
 	
+	drawScreen(timeStep);
 	
 	
 	//check for end of level
 	if (blockList[blockList.length - 1].touchingBelow(hero)){
+		hero.changeAnimation(-1);
+		drawScreen(0);
 		ctx.fillStyle = "#000000";
 		ctx.fillText("Level Complete", 50, 50);
-		//start next level in 1000 milliseconds and don't call draw anymore
+		//start next level in 1000 milliseconds and don't call loop anymore
 		window.setTimeout(nextLevel, 1000);
 		return;
 	}
@@ -468,7 +474,7 @@ var draw = function(timestamp){
 		return;
 	}
 	//request next frame to be drawn
-	window.requestAnimFrame(draw);
+	window.requestAnimFrame(loop);
 }
 
 var heroImg = new Image();
@@ -477,5 +483,5 @@ heroImg.src = "./char.png";
 window.onload = function(){
 	level = 1;
 	initGame(5*level);
-	window.requestAnimFrame(draw);
+	window.requestAnimFrame(loop);
 }
