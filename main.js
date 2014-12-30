@@ -72,7 +72,7 @@ var level;
 
 //initializes a level
 function initGame(levelLength){
-	hero = new Hero(30, canvas.height / 2, 15, 24, '#1FFF1F');
+	hero = new Hero(30, canvas.height / 4, 15, 24, '#1FFF1F');
 	camera = new Camera(0, 3*canvas.width, -canvas.height, canvas.height, 0, 0);
 	blockList = [];
 	blockList.push(new Block(0, canvas.height - 10, canvas.width, 10, "#FF1F1F"));
@@ -421,7 +421,7 @@ function nextLevel(){
 
 function resetLevel(){
 	//reset hero and camera position, but leave blocks the same
-	hero = new Hero(30, canvas.height / 2, 15, 24, '#1FFF1F');
+	hero = new Hero(30, canvas.height / 4, 15, 24, '#1FFF1F');
 	camera = new Camera(0, 3*canvas.width, -canvas.height, canvas.height, 0, 0);
 	lastFrameTime = 0;
 	window.requestAnimFrame(loop);
