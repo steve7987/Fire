@@ -306,6 +306,9 @@ Hero.prototype.update = function(dt){
 	else if (onGround && this.xvel == 0) {
 		this.animationType = -1;  //default standing animation
 	}
+	else if (!onGround && this.xvel != 0 && this.jumpsLeft > 0){
+		this.changeAnimation(1);
+	}
 	
 	//update position
 	this.x += this.xvel * dt / 1000.0;
