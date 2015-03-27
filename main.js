@@ -76,11 +76,15 @@ function initGame(levelLength){
 	camera = new Camera(0, 3*canvas.width, -canvas.height, canvas.height, 0, 0);
 	blockList = [];
 	blockList.push(new Block(0, canvas.height - 10, canvas.width, 10, "#FF1F1F"));
+	//create blocks
+	var tileWidth = 20;
+	var tileHeight = 15;
 	for (var i = 0; i < levelLength; i++){
 		blockList.push(new Block(Math.floor((Math.random() * canvas.width / 20 + i * canvas.width / 15)), 
-								 Math.floor((Math.random() * canvas.height / 2 + canvas.height / 3) - 10*i),
-								 Math.floor((Math.random() * 100 + 10)),
-								 Math.floor((Math.random() * 100 + 10)), "#FF1F1F")); 
+								 Math.floor(Math.random() * canvas.height / (2 * tileHeight)) * tileHeight + canvas.height / 3 - tileHeight*i,
+								 Math.floor((Math.random() * 3 + 2)) * tileWidth,
+								 tileHeight, 
+								 "#FF1F1F")); 
 	}
 	blockList[blockList.length - 1].color = "#1F1FFF";
 }
