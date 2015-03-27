@@ -73,9 +73,8 @@ var level;
 //initializes a level
 function initGame(levelLength){
 	hero = new Hero(30, canvas.height / 4, 15, 24, '#1FFF1F');
-	camera = new Camera(0, 3*canvas.width, -canvas.height, canvas.height, 0, 0);
 	blockList = [];
-	blockList.push(new Block(0, canvas.height - 10, canvas.width, 10, "#FF1F1F"));
+	blockList.push(new Block(0, canvas.height - 10, canvas.width, 10, "#FF1F1F"));  //ground block
 	//create blocks
 	var tileWidth = 20;
 	var tileHeight = 15;
@@ -87,6 +86,7 @@ function initGame(levelLength){
 								 "#FF1F1F")); 
 	}
 	blockList[blockList.length - 1].color = "#1F1FFF";
+	camera = new Camera(0, levelLength / 15 * canvas.width, -canvas.height - levelLength * tileHeight, canvas.height, 0, 0);
 }
 
 function Camera(minX, maxX, minY, maxY, startX, startY){  //boundaries for the camera
@@ -429,7 +429,13 @@ function nextLevel(){
 function resetLevel(){
 	//reset hero and camera position, but leave blocks the same
 	hero = new Hero(30, canvas.height / 4, 15, 24, '#1FFF1F');
-	camera = new Camera(0, 3*canvas.width, -canvas.height, canvas.height, 0, 0);
+	//camera = new Camera(0, 3*canvas.width, -canvas.height, canvas.height, 0, 0);
+	camera.x = 0;
+	camera.y = 0;
+	camera.xvel = 0;
+	camera.ypos = 0;
+	camera.desiredX = 0;
+	camera.desiredY = 0;
 	lastFrameTime = 0;
 	window.requestAnimFrame(loop);
 }
