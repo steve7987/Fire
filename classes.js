@@ -305,11 +305,12 @@ function Block(xpos, ypos, width, height, color){
 }
 
 Block.prototype.draw = function(dt){
-	//ctx.fillStyle = '#FFFFFF';
-	//ctx.fillRect(Math.round(this.x - 1 - camera.x), Math.round(this.y - 1 - camera.y), this.dx + 2, this.dy + 2);
 
 	ctx.fillStyle = this.color;
-	ctx.fillRect(this.x - camera.x, this.y - camera.y, this.dx, this.dy);
+	ctx.fillRect(this.x - camera.x + tileWidth, this.y - camera.y, this.dx - 2*tileWidth, this.dy);
+	ctx.fillStyle = '#000000';
+	ctx.fillRect(this.x - camera.x, this.y - camera.y, tileWidth, this.dy);
+	ctx.fillRect(this.x - camera.x + this.dx - tileWidth, this.y - camera.y, tileWidth, this.dy);
 }
 
 Block.prototype.collide = function(target){

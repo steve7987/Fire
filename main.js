@@ -70,14 +70,15 @@ var blockList;
 var camera;
 var level;
 
+var tileWidth = 20;
+var tileHeight = 15;
+
 //initializes a level
 function initGame(levelLength){
 	hero = new Hero(30, canvas.height / 4, 15, 24, '#1FFF1F');
 	blockList = [];
 	blockList.push(new Block(0, canvas.height - 10, canvas.width, 10, "#FF1F1F"));  //ground block
 	//create blocks
-	var tileWidth = 20;
-	var tileHeight = 15;
 	for (var i = 0; i < levelLength; i++){
 		blockList.push(new Block(Math.floor((Math.random() * canvas.width / 20 + i * canvas.width / 15)), 
 								 Math.floor(Math.random() * canvas.height / (2 * tileHeight)) * tileHeight + canvas.height / 3 - tileHeight*i,
