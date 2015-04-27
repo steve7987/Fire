@@ -1,178 +1,116 @@
-window.requestAnimFrame = 	window.requestAnimationFrame ||
-							window.webkitRequestAnimationFrame ||
-							window.mozRequestAnimationFrame    ||
-							function(callback) { window.setTimeout(callback, 1000 / 60); };
-
-//fancy code from stack overflow
-var resetCanvas = function(){
-	// Store the current transformation matrix
-	ctx.save();
-
-	// Use the identity matrix while clearing the canvas
-	ctx.setTransform(1, 0, 0, 1, 0, 0);
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-	// Restore the transform
-	ctx.restore();
+//main functions
+function onEnterMain(from, fsm, variables){
+	resetCanvas(variables);
+	variables.ctx.fillStyle = "#0f0f0f";
+	variables.ctx.textAlign = "center";
+	variables.ctx.fillText("Main game", variables.canvas.width / 2, variables.canvas.height * 3 / 4);
 	
-	
-}
+	variables.lastFrameTime = 0;
+	variables.mouseX = 0;
+	variables.mouseY = 0;
 
-//setting up variables for controlling screen
-var canvas = document.getElementById("myCanvas");
-var ctx = canvas.getContext("2d");
-canvas.width = 800;
-canvas.height = 600;
-
-var lastFrameTime = 0;
-var mouseX = 0;
-var mouseY = 0;
-
-//need to check for clicks in entire window to keep track of mouse button being down
-canvas.addEventListener("mousedown", onClick, false);  //add mouse listener which calls onClick function
-window.addEventListener("mousemove", onMove, false);
-window.addEventListener("keydown", onKeyDown, false);
-
-window.addEventListener("keyup", onKeyUp, false);
-
-//keeps track of which keys are down, and if they have been pressed
-var keyList = new Array(256);
-var keyPressed = new Array(256);
-	for (var i = 0; i < keyList.length; i++){
-	keyList[i] = false;
-	keyPressed[i] = false;
-}
-
-function onClick(event){
-	var x = event.clientX;
-	var y = event.clientY;
-	console.log("Click at: " + x + ", " + y);
-}
-
-function onMove(event){
-	var x = event.clientX;
-	var y = event.clientY;
-}
-
-function onKeyDown(event){
-	if (!keyList[event.keyCode]) {  //if the key was just pressed now
-		keyPressed[event.keyCode] = true;
+	//keeps track of which keys are down, and if they have been pressed
+	variables.keyList = new Array(256);
+	variables.keyPressed = new Array(256);
+		for (var i = 0; i < variables.keyList.length; i++){
+		variables.keyList[i] = false;
+		variables.keyPressed[i] = false;
 	}
-	keyList[event.keyCode] = true;
+	var loop = function(timestamp){
+		
+		//update items
+		var timeStep = 0;
+		if (variables.lastFrameTime != 0){
+			timeStep = timestamp - variables.lastFrameTime;
+			update(timeStep, variables);
+		}
+		variables.lastFrameTime = timestamp;
+
+		
+		drawScreen(timeStep, variables);
+		
+		
+		//check for end of level
+		if (variables.blockList[variables.blockList.length - 1].touchingBelow(variables.hero)){
+			fsm.change("Level");
+			return;
+		}
+		//check for hero death
+		if (variables.hero.y > variables.camera.maxY + variables.canvas.height){  //death from falling
+			console.log("death");
+			fsm.change("Death");
+			return;
+		}
+		//request next frame to be drawn
+		window.requestAnimFrame(loop);
+	}	
+	window.requestAnimFrame(loop);
 }
 
-function onKeyUp(event){
-	keyList[event.keyCode] = false; 
+function onClickMain(x, y, fsm, variables){
+
 }
 
-var hero;
-var blockList;
-var camera;
-var level;
+function onKeyUpMain(event, fsm, variables){
+	variables.keyList[event.keyCode] = false; 
+}
 
-var tileWidth = 20;
-var tileHeight = 15;
+function onKeyDownMain(event, fsm, variables){
+	if (!variables.keyList[event.keyCode]) {  //if the key was just pressed now
+		variables.keyPressed[event.keyCode] = true;
+	}
+	variables.keyList[event.keyCode] = true;
+}
 
 //initializes a level
-function initGame(levelLength){
-	hero = new Hero(30, canvas.height / 4, 15, 24, '#1FFF1F');
-	blockList = [];
-	blockList.push(new Block(0, canvas.height - 10, canvas.width, 10, "#FF1F1F"));  //ground block
+function initGame(levelLength, variables){
+	variables.tileWidth = 20;
+	variables.tileHeight = 15;
+	variables.hero = new Hero(30, variables.canvas.height / 4, 15, 24, '#1FFF1F', variables);
+	variables.blockList = [];
+	variables.blockList.push(new Block(0, variables.canvas.height - 10, variables.canvas.width, 10, "#FF1F1F", variables));  //ground block
 	//create blocks
 	for (var i = 0; i < levelLength; i++){
-		blockList.push(new Block(Math.floor((Math.random() * canvas.width / 20 + i * canvas.width / 15)), 
-								 Math.floor(Math.random() * canvas.height / (2 * tileHeight)) * tileHeight + canvas.height / 3 - tileHeight*i,
-								 Math.floor((Math.random() * 3 + 2)) * tileWidth,
-								 tileHeight, 
-								 "#FF1F1F")); 
+		variables.blockList.push(new Block(Math.floor((Math.random() * variables.canvas.width / 20 + i * variables.canvas.width / 15)), 
+								 Math.floor(Math.random() * variables.canvas.height / (2 * variables.tileHeight)) * variables.tileHeight 
+											+ variables.canvas.height / 3 - variables.tileHeight*i,
+								 Math.floor((Math.random() * 3 + 2)) * variables.tileWidth,
+								 variables.tileHeight, 
+								 "#FF1F1F", variables)); 
 	}
-	blockList[blockList.length - 1].color = "#1F1FFF";
-	camera = new Camera(0, levelLength / 15 * canvas.width, -canvas.height - levelLength * tileHeight, canvas.height, 0, 0);
+	variables.blockList[variables.blockList.length - 1].color = "#1F1FFF";
+	variables.camera = new Camera(0, levelLength / 15 * variables.canvas.width, -variables.canvas.height - levelLength * variables.tileHeight, 
+								  variables.canvas.height, 0, 0, variables);
 }
 
-
-
-function nextLevel(){
-	level++;
-	initGame(5*level);
-	lastFrameTime = 0;
-	window.requestAnimFrame(loop);
-}
-
-function resetLevel(){
+function resetLevel(variables){
 	//reset hero and camera position, but leave blocks the same
-	hero = new Hero(30, canvas.height / 4, 15, 24, '#1FFF1F');
-	//camera = new Camera(0, 3*canvas.width, -canvas.height, canvas.height, 0, 0);
-	camera.x = 0;
-	camera.y = 0;
-	camera.xvel = 0;
-	camera.ypos = 0;
-	camera.desiredX = 0;
-	camera.desiredY = 0;
-	lastFrameTime = 0;
-	window.requestAnimFrame(loop);
+	variables.hero = new Hero(30, variables.canvas.height / 4, 15, 24, '#1FFF1F', variables);
+	variables.camera.x = 0;
+	variables.camera.y = 0;
+	variables.camera.xvel = 0;
+	variables.camera.ypos = 0;
+	variables.camera.desiredX = 0;
+	variables.camera.desiredY = 0;
 }
 
-function update(dt){
-	hero.update(dt);
-	camera.Update(dt);
+
+function update(dt, variables){
+	variables.hero.update(dt);
+	variables.camera.Update(dt);
 }
 
-function drawScreen(timestamp){
+function drawScreen(timestamp, variables){
 	//draw items
-	resetCanvas();
+	resetCanvas(variables);
 	//set background
-	ctx.fillStyle = "#F1F1F1";
-	ctx.fillRect(0, 0, canvas.width, canvas.height);
+	variables.ctx.fillStyle = "#F1F1F1";
+	variables.ctx.fillRect(0, 0, variables.canvas.width, variables.canvas.height);
 	//draw items
-	for (var i = 0; i < blockList.length; i++){
-		blockList[i].draw(timestamp);
+	for (var i = 0; i < variables.blockList.length; i++){
+		variables.blockList[i].draw(timestamp);
 	}
-	hero.draw(timestamp);
-	ctx.fillStyle = "#000000";
-	ctx.fillText("Level: " + level, 50, 25);
-}
-
-var loop = function(timestamp){
-	
-	//update items
-	var timeStep = 0;
-	if (lastFrameTime != 0){
-		timeStep = timestamp - lastFrameTime;
-		update(timeStep);
-	}
-	lastFrameTime = timestamp;
-
-	
-	drawScreen(timeStep);
-	
-	
-	//check for end of level
-	if (blockList[blockList.length - 1].touchingBelow(hero)){
-		hero.changeAnimation(-1);
-		drawScreen(0);
-		ctx.fillStyle = "#000000";
-		ctx.fillText("Level Complete", 50, 50);
-		//start next level in 1000 milliseconds and don't call loop anymore
-		window.setTimeout(nextLevel, 1000);
-		return;
-	}
-	//check for hero death
-	if (hero.y > camera.maxY + canvas.height){  //death from falling
-		ctx.fillStyle = "#000000";
-		ctx.fillText("You Died", 50, 50);
-		window.setTimeout(resetLevel, 1000);
-		return;
-	}
-	//request next frame to be drawn
-	window.requestAnimFrame(loop);
-}
-
-var heroImg = new Image();
-heroImg.src = "./char.png";
-
-window.onload = function(){
-	level = 1;
-	initGame(5*level);
-	window.requestAnimFrame(loop);
+	variables.hero.draw(timestamp);
+	variables.ctx.fillStyle = "#000000";
+	variables.ctx.fillText("Level: " + variables.level, 50, 25);
 }

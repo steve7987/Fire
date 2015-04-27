@@ -1,4 +1,4 @@
-function Camera(minX, maxX, minY, maxY, startX, startY){  //boundaries for the camera
+function Camera(minX, maxX, minY, maxY, startX, startY, variables){  //boundaries for the camera
 	this.minX = minX;
 	this.minY = minY;
 	this.maxX = maxX;
@@ -6,6 +6,8 @@ function Camera(minX, maxX, minY, maxY, startX, startY){  //boundaries for the c
 	
 	this.x = startX;
 	this.y = startY;
+	this.variables = variables;
+	
 	
 	//spring camera variables
 	this.xvel = 0;
@@ -15,16 +17,16 @@ function Camera(minX, maxX, minY, maxY, startX, startY){  //boundaries for the c
 	this.w = 7;  //value to compute constants
 	
 	//camera offset from center of hero
-	this.xOffset = canvas.width / 2;
-	this.yOffset = canvas.height / 2;
+	this.xOffset = variables.canvas.width / 2;
+	this.yOffset = variables.canvas.height / 2;
 	
 }
 
 Camera.prototype.Update = function(dt){
 
-	this.desiredX = hero.x + hero.dx / 2 - this.xOffset;
-	if (hero.onGround() || hero.yvel >= 490){
-		this.desiredY = hero.y + hero.dy / 2 - this.yOffset;
+	this.desiredX = this.variables.hero.x + this.variables.hero.dx / 2 - this.xOffset;
+	if (this.variables.hero.onGround() || this.variables.hero.yvel >= 490){
+		this.desiredY = this.variables.hero.y + this.variables.hero.dy / 2 - this.yOffset;
 	}
 	//modify x
 	if ((this.x - this.desiredX)*(this.x - this.desiredX) > 0.01){
@@ -54,7 +56,7 @@ Camera.prototype.Update = function(dt){
 	if (this.y > this.maxY) { this.y = this.maxY; }
 }
 
-function Hero(xpos, ypos, width, height, color){
+function Hero(xpos, ypos, width, height, color, variables){
 	//basic parameters
 	this.x = xpos;
 	this.y = ypos;
@@ -63,6 +65,7 @@ function Hero(xpos, ypos, width, height, color){
 	this.color = color;
 	this.xvel = 0;
 	this.yvel = 0;
+	this.variables = variables;
 	//ground movement vars
 	this.speed = 150;
 	//jumping vars
@@ -102,33 +105,33 @@ Hero.prototype.draw = function(dt){
 		}
 		//draw the sprite.  flip it if facing left
 		if (this.facing == 1){
-			ctx.save();
-			ctx.translate(this.x - camera.x, this.y - camera.y);
-			ctx.drawImage(heroImg, this.Frame * 16, this.animationType * 25, 15, 24, 0, 0, 15, 24);
-			ctx.restore();
+			this.variables.ctx.save();
+			this.variables.ctx.translate(this.x - this.variables.camera.x, this.y - this.variables.camera.y);
+			this.variables.ctx.drawImage(this.variables.heroImg, this.Frame * 16, this.animationType * 25, 15, 24, 0, 0, 15, 24);
+			this.variables.ctx.restore();
 		}
 		else {
-			ctx.save();
-			ctx.translate(this.x - camera.x + this.dx, this.y - camera.y);
-			ctx.scale(-1, 1);
-			ctx.drawImage(heroImg, this.Frame * 16, this.animationType * 25, 15, 24, 0, 0, 15, 24);
-			ctx.restore();
+			this.variables.ctx.save();
+			this.variables.ctx.translate(this.x - this.variables.camera.x + this.dx, this.y - this.variables.camera.y);
+			this.variables.ctx.scale(-1, 1);
+			this.variables.ctx.drawImage(this.variables.heroImg, this.Frame * 16, this.animationType * 25, 15, 24, 0, 0, 15, 24);
+			this.variables.ctx.restore();
 		}
 	}
 	else {
 		//draw default standing animation
 		if (this.facing == 1){
-			ctx.save();
-			ctx.translate(this.x - camera.x, this.y - camera.y);
-			ctx.drawImage(heroImg, 0, 0, 15, 24, 0, 0, 15, 24);
-			ctx.restore();
+			this.variables.ctx.save();
+			this.variables.ctx.translate(this.x - this.variables.camera.x, this.y - this.variables.camera.y);
+			this.variables.ctx.drawImage(this.variables.heroImg, 0, 0, 15, 24, 0, 0, 15, 24);
+			this.variables.ctx.restore();
 		}
 		else {
-			ctx.save();
-			ctx.translate(this.x - camera.x + this.dx, this.y - camera.y);
-			ctx.scale(-1, 1);
-			ctx.drawImage(heroImg, 0, 0, 15, 24, 0, 0, 15, 24);
-			ctx.restore();
+			this.variables.ctx.save();
+			this.variables.ctx.translate(this.x - this.variables.camera.x + this.dx, this.y - this.variables.camera.y);
+			this.variables.ctx.scale(-1, 1);
+			this.variables.ctx.drawImage(this.variables.heroImg, 0, 0, 15, 24, 0, 0, 15, 24);
+			this.variables.ctx.restore();
 		}
 	}
 }
@@ -151,8 +154,8 @@ Hero.prototype.update = function(dt){
 		this.jumpsLeft = this.extraJumps;
 	}
 	
-	if (keyPressed[87]) {
-		keyPressed[87] = false;
+	if (this.variables.keyPressed[87]) {
+		this.variables.keyPressed[87] = false;
 		if ((this.jumpsLeft > 0 || onGround)){
 			this.yvel = -1 * this.jumpPower;
 			if (this.xvel != 0){			
@@ -166,10 +169,10 @@ Hero.prototype.update = function(dt){
 				this.changeAnimation(3);  //air jump animation
 				//adjust velocity for secondary jumps
 				this.xvel = 0;
-				if (keyList[65]) { 
+				if (this.variables.keyList[65]) { 
 					this.xvel -= this.speed; 
 				}
-				if (keyList[68]) { 
+				if (this.variables.keyList[68]) { 
 					this.xvel += this.speed; 
 				}
 			}
@@ -179,22 +182,22 @@ Hero.prototype.update = function(dt){
 	//compute velocities based on keys down
 	if (onGround){
 		this.xvel = 0;
-		if (keyList[65]) { 
+		if (this.variables.keyList[65]) { 
 			this.xvel -= this.speed; 
 		}
-		if (keyList[68]) { 
+		if (this.variables.keyList[68]) { 
 			this.xvel += this.speed; 
 		}
 	}
 	else {
 		//movement in the air
-		if (keyList[65]  && this.xvel > -this.speed) { 
+		if (this.variables.keyList[65]  && this.xvel > -this.speed) { 
 			this.xvel -= this.jumpHorizontalAccel * dt / 1000.0; 
 		}
-		if (keyList[68] && this.xvel < this.speed) { 
+		if (this.variables.keyList[68] && this.xvel < this.speed) { 
 			this.xvel += this.jumpHorizontalAccel * dt / 1000.0; 
 		}
-		if (!keyList[65] && !keyList[68]){
+		if (!this.variables.keyList[65] && !this.variables.keyList[68]){
 			this.xvel *= 0.9;
 		}
 		//gravity
@@ -231,20 +234,20 @@ Hero.prototype.update = function(dt){
 	this.pdtx = dt / 1000.0;
 	this.pdty = dt / 1000.0;
 	//adjust y pos first, then do x
-	for (var i = 0; i < blockList.length; i++){
-		if (blockList[i].collide(this)){
+	for (var i = 0; i < this.variables.blockList.length; i++){
+		if (this.variables.blockList[i].collide(this)){
 			//compute new position and velocities
-			this.adjustY(blockList[i], oldX, oldY);
+			this.adjustY(this.variables.blockList[i], oldX, oldY);
 		}
 	}
 	if (this.pdty < dt / 1000.0){
 		this.y = oldY + this.yvel * this.pdty;
 		this.yvel = 0;
 	}
-	for (var i = 0; i < blockList.length; i++){
-		if (blockList[i].collide(this)){
+	for (var i = 0; i < this.variables.blockList.length; i++){
+		if (this.variables.blockList[i].collide(this)){
 			//compute new position and velocities
-			this.adjustX(blockList[i], oldX, oldY);
+			this.adjustX(this.variables.blockList[i], oldX, oldY);
 		}
 	}
 	if (this.pdtx < dt / 1000.0){
@@ -286,8 +289,8 @@ Hero.prototype.adjustY = function(cBlock, oldX, oldY){
 
 //checks if the hero is on top of a block
 Hero.prototype.onGround = function(){
-	for (var i = 0; i < blockList.length; i++){
-		if (blockList[i].touchingBelow(this)){
+	for (var i = 0; i < this.variables.blockList.length; i++){
+		if (this.variables.blockList[i].touchingBelow(this)){
 			return true;
 		}
 	}
@@ -296,21 +299,23 @@ Hero.prototype.onGround = function(){
 
 
 
-function Block(xpos, ypos, width, height, color){
+function Block(xpos, ypos, width, height, color, variables){
 	this.x = xpos;
 	this.y = ypos;
 	this.dx = width;
 	this.dy = height;
 	this.color = color;
+	this.variables = variables;
 }
 
 Block.prototype.draw = function(dt){
-
-	ctx.fillStyle = this.color;
-	ctx.fillRect(this.x - camera.x + tileWidth, this.y - camera.y, this.dx - 2*tileWidth, this.dy);
-	ctx.fillStyle = '#000000';
-	ctx.fillRect(this.x - camera.x, this.y - camera.y, tileWidth, this.dy);
-	ctx.fillRect(this.x - camera.x + this.dx - tileWidth, this.y - camera.y, tileWidth, this.dy);
+	this.variables.ctx.fillStyle = this.color;
+	this.variables.ctx.fillRect(this.x - this.variables.camera.x + this.variables.tileWidth, this.y - this.variables.camera.y, 
+								this.dx - 2*this.variables.tileWidth, this.dy);
+	this.variables.ctx.fillStyle = '#000000';
+	this.variables.ctx.fillRect(this.x - this.variables.camera.x, this.y - this.variables.camera.y, this.variables.tileWidth, this.dy);
+	this.variables.ctx.fillRect(this.x - this.variables.camera.x + this.dx - this.variables.tileWidth, this.y - this.variables.camera.y, 
+								this.variables.tileWidth, this.dy);
 }
 
 Block.prototype.collide = function(target){
