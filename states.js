@@ -48,6 +48,9 @@ function onKeyDownMenu(event, fsm, variables){
 
 //level functions
 function onEnterLevel(from, fsm, variables){
+	variables.hero.changeAnimation(0);
+	drawScreen(0, variables);
+	
 	variables.ctx.fillStyle = "#0f0f0f";
 	variables.ctx.textAlign = "center";
 	variables.ctx.fillText("Level Complete!!!", variables.canvas.width / 2, variables.canvas.height * 3 / 4);
