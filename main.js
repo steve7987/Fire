@@ -1,10 +1,5 @@
 //main functions
 function onEnterMain(from, fsm, variables){
-	resetCanvas(variables);
-	variables.ctx.fillStyle = "#0f0f0f";
-	variables.ctx.textAlign = "center";
-	variables.ctx.fillText("Main game", variables.canvas.width / 2, variables.canvas.height * 3 / 4);
-	
 	variables.lastFrameTime = 0;
 	variables.mouseX = 0;
 	variables.mouseY = 0;
