@@ -40,11 +40,18 @@ function onClickMenu(x, y, fsm, variables){
 	fsm.change("Main");
 }
 
+function onKeyDownMenu(event, fsm, variables){
+	if (event.keyCode == 32){  //space pressed
+		fsm.change("Main");
+	}
+}
+
 //level functions
 function onEnterLevel(from, fsm, variables){
 	variables.ctx.fillStyle = "#0f0f0f";
 	variables.ctx.textAlign = "center";
 	variables.ctx.fillText("Level Complete!!!", variables.canvas.width / 2, variables.canvas.height * 3 / 4);
+	variables.ctx.fillText("Click to Continue", variables.canvas.width / 2, variables.canvas.height * 3 / 4 + 20);
 }
 
 function onExitLevel(from, fsm, variables){
@@ -56,11 +63,18 @@ function onClickLevel(x, y, fsm, variables){
 	fsm.change("Main");
 }
 
+function onKeyDownLevel(event, fsm, variables){
+	if (event.keyCode == 32){  //space pressed
+		fsm.change("Main");
+	}
+}
+
 //death functions
 function onEnterDeath(from, fsm, variables){
 	variables.ctx.fillStyle = "#0f0f0f";
 	variables.ctx.textAlign = "center";
 	variables.ctx.fillText("You Died...", variables.canvas.width / 2, variables.canvas.height * 3 / 4);
+	variables.ctx.fillText("Click to Continue", variables.canvas.width / 2, variables.canvas.height * 3 / 4 + 20);
 }
 
 function onExitDeath(from, fsm, variables){
@@ -69,6 +83,12 @@ function onExitDeath(from, fsm, variables){
 
 function onClickDeath(x, y, fsm, variables){
 	fsm.change("Main");
+}
+
+function onKeyDownDeath(event, fsm, variables){
+	if (event.keyCode == 32){  //space pressed
+		fsm.change("Main");
+	}
 }
 
 function Start() {
@@ -81,14 +101,17 @@ function Start() {
 			onEnterMenu: function(from, fsm, variables) {onEnterMenu(from, fsm, variables)},
 			onExitMenu: function(from, fsm, variables) {onExitMenu(from, fsm, variables)},
 			onClickMenu: function(x, y, fsm, variables) {onClickMenu(x, y, fsm, variables); },
+			onKeyDownMenu: function(event, fsm, variables) { onKeyDownMenu(event, fsm, variables) },
 			
 			onEnterLevel: function(from, fsm, variables) {onEnterLevel(from, fsm, variables)},
 			onExitLevel: function(from, fsm, variables) {onExitLevel(from, fsm, variables)},
 			onClickLevel: function(x, y, fsm, variables) {onClickLevel(x, y, fsm, variables); },
+			onKeyDownLevel: function(event, fsm, variables) { onKeyDownLevel(event, fsm, variables) },
 			
 			onEnterDeath: function(from, fsm, variables) {onEnterDeath(from, fsm, variables)},
 			onExitDeath: function(from, fsm, variables) {onExitDeath(from, fsm, variables)},
 			onClickDeath: function(x, y, fsm, variables) {onClickDeath(x, y, fsm, variables); },
+			onKeyDownDeath: function(event, fsm, variables) { onKeyDownDeath(event, fsm, variables) },
 			
 			onEnterMain: function(from, fsm, variables) { onEnterMain(from, fsm, variables) },
 			onClickMain: function(x, y, fsm, variables) { onClickMain(x, y, fsm, variables) },

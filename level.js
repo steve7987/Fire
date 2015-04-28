@@ -16,7 +16,8 @@ function initGame(levelLength, variables){
 								 "#FF1F1F", variables)); 
 	}
 	variables.blockList[variables.blockList.length - 1].color = "#1F1FFF";
-	variables.camera = new Camera(0, levelLength / 15 * variables.canvas.width, -variables.canvas.height - levelLength * variables.tileHeight, 
+	variables.camera = new Camera(0, levelLength / 15 * variables.canvas.width, 
+								  -variables.canvas.height - levelLength * variables.tileHeight, 
 								  variables.canvas.height, 0, 0, variables);
 }
 

@@ -12,7 +12,6 @@ function onEnterMain(from, fsm, variables){
 		variables.keyPressed[i] = false;
 	}
 	var loop = function(timestamp){
-		
 		//update items
 		var timeStep = 0;
 		if (variables.lastFrameTime != 0){
@@ -32,7 +31,6 @@ function onEnterMain(from, fsm, variables){
 		}
 		//check for hero death
 		if (variables.hero.y > variables.camera.maxY + variables.canvas.height){  //death from falling
-			console.log("death");
 			fsm.change("Death");
 			return;
 		}
@@ -64,7 +62,6 @@ function update(dt, variables){
 }
 
 function drawScreen(timestamp, variables){
-	//draw items
 	resetCanvas(variables);
 	//set background
 	variables.ctx.fillStyle = "#F1F1F1";
